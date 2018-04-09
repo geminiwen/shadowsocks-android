@@ -175,6 +175,7 @@
                  tools:node="remove"/>
         <service android:name="com.evernote.android.job.gcm.PlatformGcmService"
                  tools:node="remove"/>
+        <service android:name=".bg.BenchmarkService" />
         <service android:name="com.evernote.android.job.JobRescheduleService"
                  android:process=":bg"
                  android:directBootAware="true"/>

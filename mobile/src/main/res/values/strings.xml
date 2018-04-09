@@ -63,6 +63,8 @@
   <string name="tcp_fastopen_summary_unsupported">Unsupported kernel version: %s &lt; 3.7.1</string>
   <string name="udp_dns">DNS Forwarding</string>
   <string name="udp_dns_summary">Forward all DNS requests to remote</string>
+  <string name="timeout">Timeout</string>
+    <string name="delay_format">%d ms</string>
 
   <!-- notification category -->
   <string name="service_vpn">VPN Service</string>

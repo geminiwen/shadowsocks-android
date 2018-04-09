@@ -18,6 +18,7 @@
 <string name="connection_test_error">"偵測出網際網路連線失敗: %s"</string>
 <string name="connection_test_fail">"無法使用網際網路"</string>
 <string name="connection_test_error_status_code">"錯誤碼: （#%d）"</string>
+<string name="timeout">"超时"</string>
 
 <!-- proxy category -->
 <string name="profile_name">"設定檔名稱"</string>

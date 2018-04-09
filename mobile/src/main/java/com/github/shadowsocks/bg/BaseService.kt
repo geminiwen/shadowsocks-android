@@ -401,6 +401,7 @@ object BaseService {
 
                     data.plugin = PluginConfiguration(profile.plugin ?: "").selectedOptions
                     data.pluginPath = PluginManager.init(data.plugin)
+                    data.pluginPath = PluginManager.init(data.plugin)
 
                     // Clean up
                     killProcesses()

@@ -72,6 +72,7 @@
 <string name="action_export_err">"导出至剪贴板失败"</string>
 <string name="action_import_msg">"导入成功"</string>
 <string name="action_import_err">"导入失败"</string>
+<string name="timeout">"超时"</string>
 
 <!-- profile -->
 <string name="profile_config">"配置文件设置"</string>

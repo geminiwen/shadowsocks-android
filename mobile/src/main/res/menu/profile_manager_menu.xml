@@ -32,4 +32,8 @@
         android:numericShortcut="1"
         android:title="@string/action_export"
         app:showAsAction="always"/>
+    <item android:id="@+id/action_benchmark"
+        android:title="Benchmark"
+        app:showAsAction="always">
+    </item>
 </menu>

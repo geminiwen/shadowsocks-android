@@ -138,6 +138,8 @@ class Profile : Serializable {
     @DatabaseField
     var rx: Long = 0
 
+    var delay: Long = -2L
+
     @DatabaseField
     val date: Date = Date()
 

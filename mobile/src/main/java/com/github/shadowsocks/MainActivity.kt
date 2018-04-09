@@ -22,15 +22,15 @@ package com.github.shadowsocks
 
 import android.app.Activity
 import android.app.PendingIntent
+import android.app.Service
 import android.app.backup.BackupManager
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.net.Uri
 import android.net.VpnService
 import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
 import android.os.Bundle
+import android.os.IBinder
 import android.os.SystemClock
 import android.support.customtabs.CustomTabsIntent
 import android.support.design.widget.Snackbar
@@ -45,11 +45,11 @@ import android.widget.TextView
 import com.github.shadowsocks.App.Companion.app
 import com.github.shadowsocks.acl.Acl
 import com.github.shadowsocks.acl.CustomRulesFragment
+import com.github.shadowsocks.aidl.IBenchmarkService
+import com.github.shadowsocks.aidl.IBenchmarkServiceCallback
 import com.github.shadowsocks.aidl.IShadowsocksService
 import com.github.shadowsocks.aidl.IShadowsocksServiceCallback
-import com.github.shadowsocks.bg.BaseService
-import com.github.shadowsocks.bg.Executable
-import com.github.shadowsocks.bg.TrafficMonitor
+import com.github.shadowsocks.bg.*
 import com.github.shadowsocks.database.Profile
 import com.github.shadowsocks.database.ProfileManager
 import com.github.shadowsocks.preference.DataStore
@@ -69,7 +69,8 @@ import java.net.Proxy
 import java.net.URL
 import java.util.*
 
-class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawer.OnDrawerItemClickListener,
+class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface,
+        Drawer.OnDrawerItemClickListener,
         OnPreferenceDataStoreChangeListener {
     companion object {
         private const val TAG = "ShadowsocksMainActivity"
@@ -287,6 +288,10 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
         app.handler.post { connection.connect() }
         DataStore.publicStore.registerChangeListener(this)
 
+        bindService(Intent(this, BenchmarkService::class.java),
+                benchmarkConnection,
+                Service.BIND_AUTO_CREATE)
+
         val intent = this.intent
         if (intent != null) handleShareIntent(intent)
     }
@@ -382,9 +387,49 @@ class MainActivity : AppCompatActivity(), ShadowsocksConnection.Interface, Drawe
 
     override fun onDestroy() {
         super.onDestroy()
+        unbindService(benchmarkConnection)
         DataStore.publicStore.unregisterChangeListener(this)
         connection.disconnect()
         BackupManager(this).dataChanged()
         app.handler.removeCallbacksAndMessages(null)
     }
+
+    var isBenchmarkable: Boolean = false
+
+    var benchmarkService : IBenchmarkService? = null
+
+    fun startBenchmark() {
+        if (!isBenchmarkable) return
+        isBenchmarkable = false
+        benchmarkService?.startBenchmark()
+    }
+
+    private val benchmarkConnection = object: ServiceConnection {
+        override fun onServiceDisconnected(name: ComponentName?) {
+
+        }
+
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            isBenchmarkable = true
+            benchmarkService = IBenchmarkService.Stub.asInterface(service);
+            benchmarkService?.registerCallback(benchmarkServiceCallback)
+        }
+    }
+
+    private val benchmarkServiceCallback =
+        object : IBenchmarkServiceCallback.Stub() {
+            override fun benchmarkResult(results: List<Benchmark>) {
+                isBenchmarkable = true
+                runOnUiThread {
+                    ProfilesFragment.instance?.loadBenchmarkResult(results)
+                }
+            }
+        }
+
+    private fun unregisterBenchmarkService() {
+        benchmarkService?.unregisterCallback(benchmarkServiceCallback)
+        unbindService(benchmarkConnection)
+        benchmarkService = null
+    }
+
 }

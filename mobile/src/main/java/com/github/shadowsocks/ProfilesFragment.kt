@@ -39,6 +39,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.github.shadowsocks.App.Companion.app
 import com.github.shadowsocks.bg.BaseService
+import com.github.shadowsocks.bg.Benchmark
 import com.github.shadowsocks.bg.TrafficMonitor
 import com.github.shadowsocks.database.Profile
 import com.github.shadowsocks.database.ProfileManager
@@ -118,6 +119,7 @@ class ProfilesFragment : ToolbarFragment(), Toolbar.OnMenuItemClickListener {
 
         private val text1 = itemView.findViewById<TextView>(android.R.id.text1)
         private val text2 = itemView.findViewById<TextView>(android.R.id.text2)
+        private val benchmark = itemView.findViewById<TextView>(R.id.tv_benchmark)
         private val traffic = itemView.findViewById<TextView>(R.id.traffic)
         private val edit = itemView.findViewById<View>(R.id.edit)
         private var adView: AdView? = null
@@ -138,6 +140,19 @@ class ProfilesFragment : ToolbarFragment(), Toolbar.OnMenuItemClickListener {
 
         fun bind(item: Profile) {
             this.item = item
+
+            when {
+                item.delay == -2L -> this.benchmark.visibility = View.GONE
+                item.delay == -1L -> {
+                    this.benchmark.visibility = View.VISIBLE
+                    this.benchmark.setText(R.string.timeout)
+                }
+                else -> {
+                    this.benchmark.visibility = View.VISIBLE
+                    this.benchmark.text = getString(R.string.delay_format, item.delay)
+                }
+            }
+
             val editable = isProfileEditable(item.id)
             edit.isEnabled = editable
             edit.alpha = if (editable) 1F else .5F
@@ -392,7 +407,21 @@ class ProfilesFragment : ToolbarFragment(), Toolbar.OnMenuItemClickListener {
                 } else R.string.action_export_err, Snackbar.LENGTH_LONG).show()
                 true
             }
+            R.id.action_benchmark -> {
+                (activity as MainActivity).startBenchmark()
+                true
+            }
             else -> false
+        }
+    }
+
+    fun loadBenchmarkResult(results: List<Benchmark>) {
+        for(benchmark in results) {
+            val id = benchmark.profileId
+            val delay = benchmark.delay
+            profilesAdapter.profiles.find { it.id == id }
+                    ?.delay = delay
+            profilesAdapter.notifyDataSetChanged()
         }
     }
 
@@ -426,4 +455,6 @@ class ProfilesFragment : ToolbarFragment(), Toolbar.OnMenuItemClickListener {
         instance = null
         super.onDestroy()
     }
+
+
 }
